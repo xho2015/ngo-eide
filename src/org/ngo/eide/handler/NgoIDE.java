@@ -49,68 +49,64 @@ import org.slf4j.LoggerFactory;
 public class NgoIDE implements EndpointCallback {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(NgoIDE.class);
-	
+
 	protected static final ArrayList<String> PRESERVED_PERSPECTIVE = new ArrayList<String>();
-	static {	
-		//initialize preserved perspective
-		PRESERVED_PERSPECTIVE.add("org.ngo.eide.perspectives.NgoEngPerspective");
-		//PRESERVED_PERSPECTIVE.add("org.eclipse.jdt.ui.resourcePerspective");
-		//PRESERVED_PERSPECTIVE.add("org.eclipse.debug.ui.DebugPerspective");
-		//PRESERVED_PERSPECTIVE.add("org.eclipse.jdt.ui.JavaBrowsingPerspective");
+	protected static final String ID_NGO_PERSPECTIVE = "org.ngo.eide.perspectives.NgoEngPerspective";
+	static {
+		// initialize preserved perspective
+		PRESERVED_PERSPECTIVE.add(ID_NGO_PERSPECTIVE);
+		PRESERVED_PERSPECTIVE.add("org.eclipse.ui.resourcePerspective");
+		PRESERVED_PERSPECTIVE.add("org.eclipse.debug.ui.DebugPerspective");
+		PRESERVED_PERSPECTIVE.add("org.eclipse.ui.JavaBrowsingPerspective");
 	}
-			
+
 	public final static NgoIDE instance = new NgoIDE();
 	protected static final String JAVA = "java"; //$NON-NLS-1$
 	protected static final String JAVA_EXTENSION = ".java"; //$NON-NLS-1$
 	protected static final String LAUNCHCONFIGURATIONS = "launchConfigurations"; //$NON-NLS-1$
 	protected static final String LAUNCH_EXTENSION = ".launch"; //$NON-NLS-1$
 
-	
-	
 	private IWorkbench workbench;
 
 	public NgoIDE() {
 
-		while (true)
-		{
-			//loop until the workbench is instantiated
+		while (true) {
+			// loop until the workbench is instantiated
 			workbench = PlatformUI.getWorkbench();
-			if (workbench != null)
-			{	
+			if (workbench != null) {
 				configuPerspective();
 				break;
-			}
-			else
+			} else
 				try {
 					LOGGER.debug("workbench is not available, loop again...");
 					Thread.sleep(1000);
-				} catch (InterruptedException e) {}
+				} catch (InterruptedException e) {
+				}
 		}
 	}
-	
+
 	private void configuPerspective() {
 		// get all the perspectives
 		IPerspectiveDescriptor[] prs = workbench.getPerspectiveRegistry().getPerspectives();
-		for (IPerspectiveDescriptor p : prs)
-		{
-			if(!PRESERVED_PERSPECTIVE.contains(p.getId()))
-				workbench.getPerspectiveRegistry().deletePerspective(p);
+		for (IPerspectiveDescriptor p : prs) {
+			 if(!PRESERVED_PERSPECTIVE.contains(p.getId()))
+			 workbench.getPerspectiveRegistry().deletePerspective(p);
 		}
-		
-		//set default perspective
+
+		// set default perspective
 		IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
 		IWorkbenchWindow window1 = windows[0];
-		final IPerspectiveDescriptor prdes =  workbench.getPerspectiveRegistry().findPerspectiveWithId(PRESERVED_PERSPECTIVE.get(0));
-
-		//do perspective switch here.
-		Display.getDefault().syncExec(new Runnable() {
-		    public void run() {
-		    	try {
+		final IPerspectiveDescriptor prdes = workbench.getPerspectiveRegistry().findPerspectiveWithId(ID_NGO_PERSPECTIVE);
+		// do perspective switch here.
+		/*Display.getDefault().syncExec(new Runnable() {
+			public void run() {
+				try {
 					workbench.showPerspective(prdes.getId(), window1);
-				} catch (WorkbenchException e) {}
-		    }
-		});
-		System.out.println("set Ngo as default perspective");;
+				} catch (WorkbenchException e) {
+				}
+			}
+		});*/
+		System.out.println("set Ngo as default perspective");
 	}
 
 	@Override
@@ -135,57 +131,56 @@ public class NgoIDE implements EndpointCallback {
 		IPerspectiveDescriptor[] prs = workbench.getPerspectiveRegistry().getPerspectives();
 
 		// find a specific perspective
-		IPerspectiveDescriptor prdebug = workbench.getPerspectiveRegistry().findPerspectiveWithId("org.eclipse.debug.ui.DebugPerspective");
-		IPerspectiveDescriptor prjava = workbench.getPerspectiveRegistry().findPerspectiveWithId("org.eclipse.jdt.ui.JavaPerspective");
+		IPerspectiveDescriptor prdebug = workbench.getPerspectiveRegistry()
+				.findPerspectiveWithId("org.eclipse.debug.ui.DebugPerspective");
+		IPerspectiveDescriptor prjava = workbench.getPerspectiveRegistry()
+				.findPerspectiveWithId("org.eclipse.jdt.ui.JavaPerspective");
 
 		String userprd = IDebugUIConstants.ID_DEBUG_PERSPECTIVE;
 		if (message.equalsIgnoreCase("javap")) {
 			userprd = "org.eclipse.jdt.ui.JavaPerspective";
 		} else if (message.equalsIgnoreCase("debugp")) {
 			userprd = IDebugUIConstants.ID_DEBUG_PERSPECTIVE;
+		} else if (message.equalsIgnoreCase("ngo")) {
+			userprd = ID_NGO_PERSPECTIVE;
 		}
-				
-		final IPerspectiveDescriptor prdes =  workbench.getPerspectiveRegistry().findPerspectiveWithId(userprd);
 
-		//do perspective switch here.
-		/*Display.getDefault().syncExec(new Runnable() {
-		    public void run() {
-		    	try {
-					workbench.showPerspective(prdes.getId(), window1);
-				} catch (WorkbenchException e) {}
-		    }
-		});*/ 
-		
-		
-		//HXY: below is the PC version
-		//http://www.programcreek.com/java-api-examples/index.php?source_dir=grails-ide-master/org.grails.ide.eclipse.groovy.debug.tests/jdt-debug-tests-src/org/eclipse/jdt/debug/tests/ProjectCreationDecorator.java
-		DebugUIPlugin.getStandardDisplay().syncExec(new Runnable() { 
-            public void run() { 
-                IWorkbenchPage activePage = workbench.getActiveWorkbenchWindow().getActivePage(); 
-			    activePage.setPerspective(prdes); 
-			    // hide variables and breakpoints view to reduce simultaneous conflicting requests on debug targets 
-                IViewReference ref = activePage.findViewReference(IDebugUIConstants.ID_VARIABLE_VIEW); 
-                //activePage.hideView(ref); 
-                ref = activePage.findViewReference(IDebugUIConstants.ID_BREAKPOINT_VIEW); 
-                //activePage.hideView(ref); 
-            } 
-        }); 
-		
+		final IPerspectiveDescriptor prdes = workbench.getPerspectiveRegistry().findPerspectiveWithId(userprd);
+
+		// do perspective switch here.
+		/*
+		 * Display.getDefault().syncExec(new Runnable() { public void run() {
+		 * try { workbench.showPerspective(prdes.getId(), window1); } catch
+		 * (WorkbenchException e) {} } });
+		 */
+
+		// HXY: below is the PC version
+		// http://www.programcreek.com/java-api-examples/index.php?source_dir=grails-ide-master/org.grails.ide.eclipse.groovy.debug.tests/jdt-debug-tests-src/org/eclipse/jdt/debug/tests/ProjectCreationDecorator.java
+		DebugUIPlugin.getStandardDisplay().syncExec(new Runnable() {
+			public void run() {
+				IWorkbenchPage activePage = workbench.getActiveWorkbenchWindow().getActivePage();
+				activePage.setPerspective(prdes);
+				// hide variables and breakpoints view to reduce simultaneous
+				// conflicting requests on debug targets
+				IViewReference ref = activePage.findViewReference(IDebugUIConstants.ID_VARIABLE_VIEW);
+				// activePage.hideView(ref);
+				ref = activePage.findViewReference(IDebugUIConstants.ID_BREAKPOINT_VIEW);
+				// activePage.hideView(ref);
+			}
+		});
 
 		// workspace
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		//root workspace
+		// root workspace
 		IWorkspaceRoot wsroot = workspace.getRoot();
 		// projects
 		IProject[] projects = wsroot.getProjects();
-		
-		
 
 		if (window1 != null && message.startsWith("code:")) {
 
-			DebugUIPlugin.getStandardDisplay().syncExec(new Runnable() { 
-	            public void run() { 
-	            	IFile class1 = null;
+			DebugUIPlugin.getStandardDisplay().syncExec(new Runnable() {
+				public void run() {
+					IFile class1 = null;
 					try {
 						IResource[] rs = wsroot.members();
 						IFolder src = projects[0].getFolder("src");
@@ -193,49 +188,50 @@ public class NgoIDE implements EndpointCallback {
 						class1 = package1.getFile("class1.java");
 						if (!class1.exists()) {
 						}
-		
+
 						// 3. insert some code into java file
 						byte[] bytes = message.replace("code:", "").getBytes();
 						ByteArrayInputStream source = new ByteArrayInputStream(bytes);
 						// enable below when needed
 						class1.setContents(source, true, true, null);
-		
+
 					} catch (CoreException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-					} 
-	            } 
-	        }); 
-				
+					}
+				}
+			});
 
 		}
 
-		//HXY: implement debug/run config
+		// HXY: implement debug/run config
 		if (message.equalsIgnoreCase("config")) {
 			try {
 				// 10. launch configuration
-				IProject pro = ResourcesPlugin.getWorkspace().getRoot().getProject("test"); 
-		        if (pro.exists()) { 
-		            //pro.delete(true, true, null); 
-		        } 
-		        // create project and import source 
-		        //IJavaProject fJavaProject = JavaProjectHelper.createJavaProject("DebugTests", "bin"); 
-		        //IPackageFragmentRoot src = JavaProjectHelper.addSourceContainer(fJavaProject, "src"); 
-		        
-		        IFolder folder = pro.getFolder("launchConfigurations"); 
-		        if (folder.exists()) { 
-		            folder.delete(true, null); 
-		        } 
-		        folder.create(true, true, null); 
-		 
-		        // delete any existing launch configs 
-		        ILaunchConfiguration[] configs = getLaunchManager().getLaunchConfigurations(); 
-		        for (int i = 0; i < configs.length; i++) { 
-		            configs[i].delete(); 
-		        } 
-		 
-		        createLaunchConfiguration(JavaCore.create(projects[0]),"SimpleTests");
-				
+				IProject pro = ResourcesPlugin.getWorkspace().getRoot().getProject("test");
+				if (pro.exists()) {
+					// pro.delete(true, true, null);
+				}
+				// create project and import source
+				// IJavaProject fJavaProject =
+				// JavaProjectHelper.createJavaProject("DebugTests", "bin");
+				// IPackageFragmentRoot src =
+				// JavaProjectHelper.addSourceContainer(fJavaProject, "src");
+
+				IFolder folder = pro.getFolder("launchConfigurations");
+				if (folder.exists()) {
+					folder.delete(true, null);
+				}
+				folder.create(true, true, null);
+
+				// delete any existing launch configs
+				ILaunchConfiguration[] configs = getLaunchManager().getLaunchConfigurations();
+				for (int i = 0; i < configs.length; i++) {
+					configs[i].delete();
+				}
+
+				createLaunchConfiguration(JavaCore.create(projects[0]), "SimpleTests");
+
 			} catch (CoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -246,8 +242,7 @@ public class NgoIDE implements EndpointCallback {
 		}
 
 	}
-	
-	
+
 	/**
 	 * Creates a shared launch configuration for the type with the given name.
 	 */

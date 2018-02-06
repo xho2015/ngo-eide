@@ -14,8 +14,29 @@
             class="org.ngo.eide.perspectives.NgoEngPerspective"
             icon="icons/releng_gears.gif"
             id="org.ngo.eide.perspectives.NgoEngPerspective"
-            name="NGO Engineering">
+            name="NGO Engineering" fixed="true">
       </perspective>
    </extension>
+   
+   <extension  point="org.eclipse.ui.perspectiveExtensions" >
+    	<perspectiveExtension
+        	targetID="*" >
+            	<hiddenMenuItem id="org.eclipse.ui.file.export"/>
+            	<hiddenMenuItem id="org.eclipse.ui.file.import"/>
+            	<hiddenMenuItem id="org.eclipse.ui.file.print"/>
+            	<hiddenMenuItem id="org.eclipse.ui.file.revert"/>
+            	<hiddenMenuItem id="org.eclipse.ui.file.restartWorkbench"/>
+            	<hiddenMenuItem id="org.eclipse.ui.edit.rename"/>
+            	<hiddenMenuItem id="org.eclipse.ui.edit.move"/>
+            	<hiddenMenuItem id="org.eclipse.ui.newWizard"/>
+            	<hiddenMenuItem id="org.eclipse.ui.edit.addBookmark"/>
+            	<hiddenMenuItem id="org.eclipse.ui.edit.text.contentAssist.proposals"/>
+            	<hiddenMenuItem id="org.eclipse.ui.edit.text.contentAssist.contextInformation"/>
+
+            	
+            	
+            	<!--<hiddenToolBarItem id="org.eclipse.ui.newWizard"/>-->
+    	</perspectiveExtension>
+	</extension>
    
 </plugin>
