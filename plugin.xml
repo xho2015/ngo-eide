@@ -8,5 +8,14 @@
             class="org.ngo.eide.NgoStartup">
       </startup>
    </extension>
-
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="org.ngo.eide.perspectives.NgoEngPerspective"
+            icon="icons/releng_gears.gif"
+            id="org.ngo.eide.perspectives.NgoEngPerspective"
+            name="NGO Engineering">
+      </perspective>
+   </extension>
+   
 </plugin>
