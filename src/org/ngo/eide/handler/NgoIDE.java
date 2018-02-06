@@ -1,6 +1,7 @@
 package org.ngo.eide.handler;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +39,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.WorkbenchException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.internal.registry.PerspectiveDescriptor;
 import org.ngo.eide.NgoStartup;
 import org.ngo.ether.endpoint.EndpointCallback;
 import org.slf4j.Logger;
@@ -46,29 +49,68 @@ import org.slf4j.LoggerFactory;
 public class NgoIDE implements EndpointCallback {
 
 	private final static Logger LOGGER = LoggerFactory.getLogger(NgoIDE.class);
-
 	
+	protected static final ArrayList<String> PRESERVED_PERSPECTIVE = new ArrayList<String>();
+	static {	
+		//initialize preserved perspective
+		PRESERVED_PERSPECTIVE.add("org.ngo.eide.perspectives.NgoEngPerspective");
+		//PRESERVED_PERSPECTIVE.add("org.eclipse.jdt.ui.resourcePerspective");
+		//PRESERVED_PERSPECTIVE.add("org.eclipse.debug.ui.DebugPerspective");
+		//PRESERVED_PERSPECTIVE.add("org.eclipse.jdt.ui.JavaBrowsingPerspective");
+	}
+			
 	public final static NgoIDE instance = new NgoIDE();
 	protected static final String JAVA = "java"; //$NON-NLS-1$
 	protected static final String JAVA_EXTENSION = ".java"; //$NON-NLS-1$
 	protected static final String LAUNCHCONFIGURATIONS = "launchConfigurations"; //$NON-NLS-1$
 	protected static final String LAUNCH_EXTENSION = ".launch"; //$NON-NLS-1$
 
+	
+	
 	private IWorkbench workbench;
 
 	public NgoIDE() {
+
 		while (true)
 		{
 			//loop until the workbench is instantiated
 			workbench = PlatformUI.getWorkbench();
 			if (workbench != null)
+			{	
+				configuPerspective();
 				break;
+			}
 			else
 				try {
 					LOGGER.debug("workbench is not available, loop again...");
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {}
 		}
+	}
+	
+	private void configuPerspective() {
+		// get all the perspectives
+		IPerspectiveDescriptor[] prs = workbench.getPerspectiveRegistry().getPerspectives();
+		for (IPerspectiveDescriptor p : prs)
+		{
+			if(!PRESERVED_PERSPECTIVE.contains(p.getId()))
+				workbench.getPerspectiveRegistry().deletePerspective(p);
+		}
+		
+		//set default perspective
+		IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
+		IWorkbenchWindow window1 = windows[0];
+		final IPerspectiveDescriptor prdes =  workbench.getPerspectiveRegistry().findPerspectiveWithId(PRESERVED_PERSPECTIVE.get(0));
+
+		//do perspective switch here.
+		Display.getDefault().syncExec(new Runnable() {
+		    public void run() {
+		    	try {
+					workbench.showPerspective(prdes.getId(), window1);
+				} catch (WorkbenchException e) {}
+		    }
+		});
+		System.out.println("set Ngo as default perspective");;
 	}
 
 	@Override
