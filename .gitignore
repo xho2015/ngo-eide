@@ -1,0 +1,11 @@
+.settings/
+bin/
+.project
+.classpath
+/.metadata
+/.recommenders
+/src/org/ngo/ether
+/src/org/apache
+/src/org/slf4j
+
+*.class
